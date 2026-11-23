@@ -5,7 +5,7 @@ document.querySelectorAll('.carousel').forEach(function (root) {
   var dots = root.querySelector('.carousel-dots');
   var n = cards.length, active = 0, timer = null, paused = false;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var INTERVAL = 3000;
+  var INTERVAL = 3500;
 
   cards.forEach(function (card, i) {
     var d = document.createElement('button');
