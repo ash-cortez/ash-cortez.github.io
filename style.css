@@ -386,3 +386,7 @@ code { font-family: var(--mono); font-size: 0.85em; background: var(--accent-sof
 .commit-wrap .sk-armed.sk-drawn .sk-pt { opacity: 0.35; }
 .sk-total { font-size: 11px; }
 img.tile { background: #fff; border: 1px solid var(--rule); border-radius: 8px; }
+
+/* Hero intro paragraph + currently line */
+.hero .intro-para { color: var(--hero-fg); font-size: 1.02rem; line-height: 1.6; max-width: 38em; margin: 0 0 12px; }
+.hero .currently-line { color: var(--hero-muted); font-family: var(--mono); font-size: 0.82rem; max-width: 46em; margin: 0 0 18px; }

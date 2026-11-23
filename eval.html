@@ -29,7 +29,7 @@
 
 <div class="status">
   <p><strong>Status: in progress.</strong> The design and hypothesis are done. I wrote the hypothesis down and committed it on 2026-11-19, before any pilot or experimental runs. The prompts for all three conditions are wired up. Next come the pilot, the power calculation, and the grader. Results will be posted here, whichever way they come out.</p>
-  <p><strong>Repo link:</strong> expected Dec 2026</p>
+  <p><strong>Repo and write-up:</strong> coming Dec 4</p>
 </div>
 
 <h2 class="plain">Why this matters</h2>
@@ -74,9 +74,9 @@
 <h2 class="plain">How I'm working</h2>
 <ul>
   <li><strong>Pre-registration in git.</strong> The commit date on the hypothesis file is the record that it came before the data. Any later change goes in a new commit with the reason, and the original is never rewritten.</li>
-  <li><strong>Raw outputs saved.</strong> The runner I'm building will save every prompt and response, so a parser bug can be fixed without rerunning the model. It finds the text block by its type, not its position, and checks <code>stop_reason</code>, so a truncated or empty answer can't quietly skew one condition.</li>
-  <li><strong>Grader checked by hand.</strong> I'll hand-label a sample and measure how often I agree with the grader before trusting its labels.</li>
-  <li><strong>Learning in the open.</strong> Claude is my tutor and code reviewer. I write the scenarios, the grader prompt, and the statistics, and I keep a learning log of what broke and why.</li>
+  <li><strong>Raw outputs will be saved.</strong> The runner I'm building will save every prompt and response, so a parser bug can be fixed without rerunning the model. It will find the text block by its type, not its position, and check <code>stop_reason</code>, so a truncated or empty answer can't quietly skew one condition.</li>
+  <li><strong>Grader will be checked by hand.</strong> I'll hand-label a sample and measure how often I agree with the grader before trusting its labels.</li>
+  <li><strong>Learning in the open.</strong> Claude is my tutor and code reviewer. I'm writing the scenarios and the statistics, and will write the grader prompt. I keep a learning log of what broke and why.</li>
 </ul>
 
 <h2 class="plain">Limitations I already know about</h2>
