@@ -148,37 +148,47 @@
     }
   };
 
+  // GitHub contribution map, drawn from data/contributions.json (refreshed daily by a GitHub Action).
+  ART.commits = function (rc, add, svg) {
+    return fetch('data/contributions.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+      var CELL = 13, GAP = 3, STEP = CELL + GAP, X0 = 30, Y0 = 22;
+      var weeks = d.weeks, max = 1;
+      weeks.forEach(function (w) { w.forEach(function (day) { if (day.count > max) max = day.count; }); });
+      svg.setAttribute('viewBox', '0 0 ' + (X0 + weeks.length * STEP + 4) + ' ' + (Y0 + 7 * STEP + 26));
+      ['Mon', 'Wed', 'Fri'].forEach(function (lbl, k) { text(svg, 0, Y0 + (1 + k * 2) * STEP + CELL - 3, lbl); });
+      var lastMonth = -1;
+      weeks.forEach(function (w, c) {
+        var first = new Date(w[0].date + 'T00:00:00');
+        if (first.getMonth() !== lastMonth && first.getDate() <= 7) {
+          lastMonth = first.getMonth();
+          if (c < weeks.length - 2) text(svg, X0 + c * STEP, 12, first.toLocaleString('en-US', { month: 'short' }));
+        }
+        w.forEach(function (day) {
+          var r = new Date(day.date + 'T00:00:00').getDay();
+          var x = X0 + c * STEP, y = Y0 + r * STEP;
+          if (!day.count) { dot(svg, x + CELL / 2, y + CELL / 2, 1.4, 'sk-pt sk-col'); svg.lastChild.dataset.col = c; return; }
+          var level = Math.min(4, Math.ceil((day.count / max) * 4));
+          var node = rc.rectangle(x, y, CELL, CELL, o({
+            roughness: 1.1, strokeWidth: 1.1, fill: 'currentColor', fillStyle: level >= 4 ? 'cross-hatch' : 'hachure',
+            hachureGap: [0, 5, 3.6, 2.6, 2.2][level], fillWeight: 1, seed: c * 7 + r + 1
+          }));
+          node.dataset.col = c;
+          add(node, 'accent');
+        });
+      });
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', X0); t.setAttribute('y', Y0 + 7 * STEP + 18); t.setAttribute('class', 'sk-label sk-total');
+      t.textContent = d.total + ' contributions in the last year';
+      svg.appendChild(t);
+    });
+  };
+
   var svgs = Array.prototype.slice.call(document.querySelectorAll('svg[data-art]'));
   if (!window.rough) return; // without the library the rows still read fine as text
-
-  svgs.forEach(function (svg) {
-    var rc = rough.svg(svg);
-    var add = function (node, cls) {
-      if (cls) cls.split(' ').forEach(function (c) { node.classList.add(c); });
-      svg.appendChild(node);
-    };
-    (ART[svg.dataset.art] || function () {})(rc, add, svg);
-  });
-
-  if (reduce || !('IntersectionObserver' in window)) return;
-
-  // Prepare each stroke to be traced, then trace when the sketch scrolls into view.
-  svgs.forEach(function (svg) {
-    var paths = svg.querySelectorAll('path');
-    var total = paths.length;
-    Array.prototype.forEach.call(paths, function (p, i) {
-      var len = 0;
-      try { len = p.getTotalLength(); } catch (e) {}
-      if (!len) return;
-      p.style.strokeDasharray = len + ' ' + len;
-      p.style.strokeDashoffset = len;
-      p.style.transitionDelay = Math.round((i / total) * 650) + 'ms';
-    });
-    svg.classList.add('sk-armed');
-  });
+  var animate = !reduce && ('IntersectionObserver' in window);
 
   // Draw on the way in; wipe instantly once fully out of view so it redraws next time.
-  var io = new IntersectionObserver(function (entries) {
+  var io = animate && new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       var svg = e.target;
       if (e.isIntersecting && e.intersectionRatio >= 0.25) {
@@ -191,7 +201,42 @@
       }
     });
   }, { threshold: [0, 0.25] });
-  svgs.forEach(function (svg) { io.observe(svg); });
+
+  // Prepare each stroke to be traced. Sketches that mark columns (data-col) sweep left to right.
+  function arm(svg) {
+    if (!animate) return;
+    var cols = 0;
+    Array.prototype.forEach.call(svg.querySelectorAll('[data-col]'), function (n) { cols = Math.max(cols, +n.dataset.col + 1); });
+    var paths = svg.querySelectorAll('path');
+    var total = paths.length;
+    Array.prototype.forEach.call(paths, function (p, i) {
+      var len = 0;
+      try { len = p.getTotalLength(); } catch (e) {}
+      if (!len) return;
+      p.style.strokeDasharray = len + ' ' + len;
+      p.style.strokeDashoffset = len;
+      var g = p.closest('[data-col]');
+      p.style.transitionDelay = (g && cols ? Math.round((+g.dataset.col / cols) * 900) : Math.round((i / total) * 650)) + 'ms';
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll('.sk-col'), function (n) {
+      n.style.transitionDelay = Math.round((+n.dataset.col / (cols || 1)) * 900) + 'ms';
+    });
+    svg.classList.add('sk-armed');
+    io.observe(svg);
+  }
+
+  svgs.forEach(function (svg) {
+    var rc = rough.svg(svg);
+    var add = function (node, cls) {
+      if (cls) cls.split(' ').forEach(function (c) { node.classList.add(c); });
+      svg.appendChild(node);
+    };
+    var done = (ART[svg.dataset.art] || function () {})(rc, add, svg);
+    if (done && done.then) done.then(function () { arm(svg); }, function () {
+      var wrap = svg.closest('.commit-map'); if (wrap) wrap.hidden = true;
+    });
+    else arm(svg);
+  });
 })();
 
 /* Gentle reveal for text blocks below the fold. */

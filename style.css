@@ -375,3 +375,13 @@ code { font-family: var(--mono); font-size: 0.85em; background: var(--accent-sof
 .skill-chips { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 7px; }
 .skill-chips li { margin: 0; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 2px 10px; }
 @media (max-width: 560px) { .skill-row { grid-template-columns: 1fr; } }
+
+/* Commit map */
+.commit-wrap { overflow-x: auto; padding-bottom: 4px; }
+.commit-wrap svg { display: block; width: 100%; min-width: 620px; height: auto; color: var(--fg); }
+.commit-wrap svg .accent path { stroke: var(--accent); }
+.commit-wrap svg path { transition: stroke-dashoffset 0.5s cubic-bezier(.4,.1,.2,1); }
+.commit-wrap .sk-pt { opacity: 0.35; transition: opacity 0.4s ease; }
+.commit-wrap .sk-armed .sk-pt { opacity: 0; }
+.commit-wrap .sk-armed.sk-drawn .sk-pt { opacity: 0.35; }
+.sk-total { font-size: 11px; }
